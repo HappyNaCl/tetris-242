@@ -10,11 +10,12 @@ export default function App() {
   return (
     <>
       <Router>
-        <Routes>
+        <Game/>
+        {/* <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/game" element={<Game />} />
           <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
+        </Routes> */}
       </Router>
     </>
   );
