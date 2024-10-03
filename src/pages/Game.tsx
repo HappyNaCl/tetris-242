@@ -67,6 +67,7 @@ function randomColor(): string {
 const Tetris: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const nextCanvasRef = useRef<HTMLCanvasElement>(null);
+  const keys = useRef<{ [key: string]: boolean }>({});
   const [board, setBoard] = useState<Block[][]>(createEmptyBoard());
   const [currentTetromino, setCurrentTetromino] = useState<Tetromino>("I");
   const [nextTetromino, setNextTetromino] = useState<Tetromino>(randomTetromino());
@@ -76,33 +77,53 @@ const Tetris: React.FC = () => {
   const [score, setScore] = useState<number>(0);
   const [color, setColor] = useState<string>(randomColor());
   const [nextColor, setNextColor] = useState<string>(randomColor());
+  const [shake, setShake] = useState(false);
+  interface Particle {
+    x: number;
+    y: number;
+    vx: number;
+    vy: number;
+    life: number;
+    color: string;
+  }
+
+  const [particles, setParticles] = useState<Particle[]>([]);
+
 
   useEffect(() => {
     function handleKeyPress(e: KeyboardEvent) {
       if (gameOver) return;
+      keys.current[e.key] = true;
 
-      if (e.key === "a") {
+      if (keys.current["a"]) {
         moveTetromino(-1);
-      } else if (e.key === "d") {
+      } else if (keys.current["d"]) {
         moveTetromino(1);
-      } else if (e.key === "s") {
+      } else if (keys.current["s"]) {
         dropTetromino();
-      } else if (e.key === "w") {
+      } else if (keys.current["w"]) {
         rotateTetromino();
-      } else if (e.key === " ") {
+      } else if (keys.current[" "]) {
         forceDropTetromino();
-      } else if (e.key === "q") {
+      } else if (keys.current["q"]) {
         swapTetromino();
       }
     }
 
+    function handleKeyUp(e: KeyboardEvent) {
+      keys.current[e.key] = false;
+    }
+
     window.addEventListener("keydown", handleKeyPress);
+    window.addEventListener("keyup", handleKeyUp);
     return () => {
       window.removeEventListener("keydown", handleKeyPress);
+      window.removeEventListener("keyup", handleKeyUp);
     };
   }, [position, currentTetromino, board, gameOver, shadowPosition]);
 
   useEffect(() => {
+
     if (gameOver) return;
 
     const dropInterval = setInterval(() => {
@@ -115,6 +136,28 @@ const Tetris: React.FC = () => {
   }, [position, currentTetromino, board, gameOver]);
 
   useEffect(() => {
+    if (particles.length === 0) return;
+
+    const particleInterval = setInterval(() => {
+      setParticles((prevParticles) =>
+        prevParticles
+          .map((particle) => ({
+            ...particle,
+            x: particle.x + particle.vx,
+            y: particle.y + particle.vy,
+            vy: particle.vy + 0.05,
+            life: particle.life - 1,
+          }))
+          .filter((particle) => particle.life > 0)
+      );
+    }, 16);
+
+    return () => clearInterval(particleInterval);
+  }, [particles]);
+
+
+  useEffect(() => {
+
     updateShadowPosition();
     drawBoard();
     drawNextTetromino();
@@ -149,7 +192,18 @@ const Tetris: React.FC = () => {
         }
       });
     });
+
+    particles.forEach((particle) => {
+      ctx.fillStyle = particle.color;
+      ctx.fillRect(
+        particle.x * BLOCK_SIZE,
+        particle.y * BLOCK_SIZE,
+        BLOCK_SIZE / 4,
+        BLOCK_SIZE / 4
+      );
+    });
   }
+
 
   function drawNextTetromino() {
     const canvas = nextCanvasRef.current;
@@ -213,7 +267,11 @@ const Tetris: React.FC = () => {
     setPosition({ ...shadowPosition });
     mergeTetromino(shadowPosition);
     spawnNewTetromino();
+
+    setShake(true);
+    setTimeout(() => setShake(false), 100);
   }
+
 
   function rotateTetromino() {
     const shape = TETROMINOES[currentTetromino];
@@ -270,6 +328,21 @@ const Tetris: React.FC = () => {
     return false;
   }
 
+  function createParticles(row: number) {
+    const newParticles: Particle[] = [];
+    for (let i = 0; i < 50; i++) {
+      newParticles.push({
+        x: Math.random() * COLS,
+        y: row,
+        vx: (Math.random() - 0.5) * 2,
+        vy: Math.random() * -2,
+        life: 100,
+        color: COLORS[Math.floor(Math.random() * COLORS.length)],
+      });
+    }
+    setParticles((prev) => [...prev, ...newParticles]);
+  }
+
   function mergeTetromino(finalPosition: Position) {
     const shape = TETROMINOES[currentTetromino];
     const newBoard = board.map((row) => row.slice());
@@ -288,16 +361,17 @@ const Tetris: React.FC = () => {
 
     setBoard(newBoard);
 
-    // Clear full rows
     for (let y = ROWS - 1; y >= 0; y--) {
       if (newBoard[y].every((cell) => cell.value === 1)) {
         newBoard.splice(y, 1);
         newBoard.unshift(new Array(COLS).fill({ value: 0, color: "" }));
+        createParticles(y); // Create particles for cleared row
         setScore((prevScore) => prevScore + 100);
         y++;
       }
     }
   }
+
 
   function spawnNewTetromino() {
     setCurrentTetromino(nextTetromino);
@@ -318,7 +392,10 @@ const Tetris: React.FC = () => {
         <h2>Game Over</h2>
       ) : (
         <>
-          <div style={{ border: "5px solid black", display: "inline-block" }}>
+          <div
+            style={{ border: "5px solid black", display: "inline-block" }}
+            className={shake ? "shake" : ""}
+          >
             <canvas
               ref={canvasRef}
               width={COLS * BLOCK_SIZE}
@@ -344,6 +421,7 @@ const Tetris: React.FC = () => {
       )}
     </div>
   );
+
 };
 
 export default Tetris;
