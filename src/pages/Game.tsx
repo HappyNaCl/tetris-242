@@ -67,6 +67,7 @@ function randomColor(): string {
 const Tetris: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const nextCanvasRef = useRef<HTMLCanvasElement>(null);
+  const enterKeyHeld = useRef<boolean>(false);
   const [board, setBoard] = useState<Block[][]>(createEmptyBoard());
   const [currentTetromino, setCurrentTetromino] = useState<Tetromino>("I");
   const [nextTetromino, setNextTetromino] = useState<Tetromino>(randomTetromino());
@@ -75,6 +76,9 @@ const Tetris: React.FC = () => {
   const [score, setScore] = useState<number>(0);
   const [color, setColor] = useState<string>(randomColor());
   const [nextColor, setNextColor] = useState<string>(randomColor());
+  const [nextPosition, setNextPosition] = useState<Position>({ x: Math.floor(COLS / 2) - 2, y: 0 });
+  const [shadowPosition, setShadowPosition] = useState<Position>({ x: position.x, y: position.y });
+
 
   useEffect(() => {
     function handleKeyPress(e: KeyboardEvent) {
@@ -92,12 +96,25 @@ const Tetris: React.FC = () => {
         forceDropTetromino();
       } else if (e.key === "q") {
         swapTetromino();
+      } else if (e.key === "Enter") {
+        if (!enterKeyHeld.current) {
+          enterKeyHeld.current = true;
+          forceDropTetromino();
+        }
+      }
+    }
+
+    function handleKeyUp(e: KeyboardEvent) {
+      if (e.key === "Enter") {
+        enterKeyHeld.current = false;
       }
     }
 
     window.addEventListener("keydown", handleKeyPress);
+    window.addEventListener("keyup", handleKeyUp);
     return () => {
       window.removeEventListener("keydown", handleKeyPress);
+      window.removeEventListener("keyup", handleKeyUp);
     };
   }, [position, currentTetromino, nextTetromino, board, gameOver]);
 
@@ -106,7 +123,7 @@ const Tetris: React.FC = () => {
 
     const dropInterval = setInterval(() => {
       dropTetromino();
-    }, 400);
+    }, 200); // Faster drop speed for better responsiveness.
 
     return () => {
       clearInterval(dropInterval);
@@ -185,6 +202,8 @@ const Tetris: React.FC = () => {
       newY++;
     }
 
+    setShadowPosition({ x: position.x, y: newY });
+
     const shape = TETROMINOES[currentTetromino];
     shape.forEach((row, y) => {
       row.forEach((cell, x) => {
@@ -213,12 +232,42 @@ const Tetris: React.FC = () => {
   }
 
   function forceDropTetromino() {
-    let newY = position.y;
-    while (!isColliding({ x: position.x, y: newY + 1 })) {
-      newY++;
+    const newBoard = board.map((row) => row.slice());
+
+    const shape = TETROMINOES[currentTetromino];
+    for (let y = 0; y < shape.length; y++) {
+      for (let x = 0; x < shape[y].length; x++) {
+        if (shape[y][x]) {
+          const boardX = position.x + x;
+          const boardY = position.y + y;
+
+          if (boardY >= 0 && boardY < ROWS && boardX >= 0 && boardX < COLS) {
+            newBoard[boardY][boardX] = { value: 0, color: "" };
+          }
+        }
+      }
     }
-    setPosition({ x: position.x, y: newY });
+
+    setPosition(shadowPosition);
+
+    for (let y = 0; y < shape.length; y++) {
+      for (let x = 0; x < shape[y].length; x++) {
+        if (shape[y][x]) {
+          const boardX = shadowPosition.x + x;
+          const boardY = shadowPosition.y + y;
+
+          if (boardY >= 0 && boardY < ROWS && boardX >= 0 && boardX < COLS) {
+            newBoard[boardY][boardX] = { value: 1, color: color };
+          }
+        }
+      }
+    }
+
+    setBoard(newBoard);
+
+    spawnNewTetromino();
   }
+
 
   function rotateTetromino() {
     const shape = TETROMINOES[currentTetromino];
@@ -297,15 +346,12 @@ const Tetris: React.FC = () => {
 
   function spawnNewTetromino() {
     setCurrentTetromino(nextTetromino);
-    setNextTetromino(randomTetromino());
-    setPosition({ x: Math.floor(COLS / 2) - 2, y: 0 });
     setColor(nextColor);
-    setNextColor(randomColor());
+    setPosition(nextPosition);
 
-    const randomRotations = Math.floor(Math.random() * 4);
-    for (let i = 0; i < randomRotations; i++) {
-      rotateTetromino();
-    }
+    setNextTetromino(randomTetromino());
+    setNextColor(randomColor());
+    setNextPosition({ x: Math.floor(COLS / 2) - 2, y: 0 });
 
     if (isColliding({ x: Math.floor(COLS / 2) - 2, y: 0 })) {
       setGameOver(true);
