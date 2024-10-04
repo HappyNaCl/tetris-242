@@ -6,7 +6,9 @@ const COLS = 10;
 const BLOCK_SIZE = 30;
 
 const TETROMINOES: { [key: string]: number[][] } = {
-  I: [[1, 1, 1, 1]],
+  I: [
+    [1, 1, 1, 1],
+  ],
   O: [
     [1, 1],
     [1, 1],
@@ -89,7 +91,6 @@ const Tetris: React.FC = () => {
 
   const [particles, setParticles] = useState<Particle[]>([]);
 
-
   useEffect(() => {
     function handleKeyPress(e: KeyboardEvent) {
       if (gameOver) return;
@@ -123,7 +124,6 @@ const Tetris: React.FC = () => {
   }, [position, currentTetromino, board, gameOver, shadowPosition]);
 
   useEffect(() => {
-
     if (gameOver) return;
 
     const dropInterval = setInterval(() => {
@@ -155,9 +155,7 @@ const Tetris: React.FC = () => {
     return () => clearInterval(particleInterval);
   }, [particles]);
 
-
   useEffect(() => {
-
     updateShadowPosition();
     drawBoard();
     drawNextTetromino();
@@ -195,15 +193,9 @@ const Tetris: React.FC = () => {
 
     particles.forEach((particle) => {
       ctx.fillStyle = particle.color;
-      ctx.fillRect(
-        particle.x * BLOCK_SIZE,
-        particle.y * BLOCK_SIZE,
-        BLOCK_SIZE / 4,
-        BLOCK_SIZE / 4
-      );
+      ctx.fillRect(particle.x * BLOCK_SIZE, particle.y * BLOCK_SIZE, BLOCK_SIZE / 4, BLOCK_SIZE / 4);
     });
   }
-
 
   function drawNextTetromino() {
     const canvas = nextCanvasRef.current;
@@ -272,19 +264,16 @@ const Tetris: React.FC = () => {
     setTimeout(() => setShake(false), 100);
   }
 
-
   function rotateTetromino() {
     const shape = TETROMINOES[currentTetromino];
-    const rotatedShape: number[][] = [];
-    for (let x = 0; x < shape[0].length; x++) {
-      const newRow: number[] = [];
-      for (let y = shape.length - 1; y >= 0; y--) {
-        newRow.push(shape[y][x]);
-      }
-      rotatedShape.push(newRow);
-    }
+    const rotatedShape: number[][] = shape[0].map((_, index) =>
+      shape.map((row) => row[index]).reverse()
+    );
 
     if (!isColliding(position, rotatedShape)) {
+      setCurrentTetromino((prevTetromino) => {
+        return prevTetromino;
+      });
       TETROMINOES[currentTetromino] = rotatedShape;
     }
   }
@@ -314,12 +303,7 @@ const Tetris: React.FC = () => {
           const newY = y + pos.y;
           const newX = x + pos.x;
 
-          if (
-            newY >= ROWS ||
-            newX < 0 ||
-            newX >= COLS ||
-            (newY >= 0 && board[newY][newX].value)
-          ) {
+          if (newY >= ROWS || newX < 0 || newX >= COLS || (newY >= 0 && board[newY][newX].value)) {
             return true;
           }
         }
@@ -365,13 +349,12 @@ const Tetris: React.FC = () => {
       if (newBoard[y].every((cell) => cell.value === 1)) {
         newBoard.splice(y, 1);
         newBoard.unshift(new Array(COLS).fill({ value: 0, color: "" }));
-        createParticles(y); // Create particles for cleared row
+        createParticles(y);
         setScore((prevScore) => prevScore + 100);
         y++;
       }
     }
   }
-
 
   function spawnNewTetromino() {
     setCurrentTetromino(nextTetromino);
@@ -392,26 +375,13 @@ const Tetris: React.FC = () => {
         <h2>Game Over</h2>
       ) : (
         <>
-          <div
-            style={{ border: "5px solid black", display: "inline-block" }}
-            className={shake ? "shake" : ""}
-          >
-            <canvas
-              ref={canvasRef}
-              width={COLS * BLOCK_SIZE}
-              height={ROWS * BLOCK_SIZE}
-              className="canvas"
-            ></canvas>
+          <div style={{ border: "5px solid black", display: "inline-block" }} className={shake ? "shake" : ""}>
+            <canvas ref={canvasRef} width={COLS * BLOCK_SIZE} height={ROWS * BLOCK_SIZE} className="canvas"></canvas>
           </div>
           <div className="next-tetromino" style={{ marginTop: "20px" }}>
             <h3>Next Tetromino:</h3>
             <div style={{ border: "5px solid black", display: "inline-block" }}>
-              <canvas
-                ref={nextCanvasRef}
-                width={4 * (BLOCK_SIZE / 2)}
-                height={4 * (BLOCK_SIZE / 2)}
-                className="next-canvas"
-              ></canvas>
+              <canvas ref={nextCanvasRef} width={4 * (BLOCK_SIZE / 2)} height={4 * (BLOCK_SIZE / 2)} className="next-canvas"></canvas>
             </div>
           </div>
           <div className="score" style={{ marginTop: "20px" }}>
@@ -421,7 +391,6 @@ const Tetris: React.FC = () => {
       )}
     </div>
   );
-
 };
 
 export default Tetris;

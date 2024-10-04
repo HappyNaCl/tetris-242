@@ -10,13 +10,21 @@
 }
 
 @keyframes shake {
-  0% { transform: translate(2px, 0); }
-  25% { transform: translate(-2px, 0); }
-  50% { transform: translate(2px, 0); }
-  75% { transform: translate(-2px, 0); }
+  0% { transform: translate(3px, 0); }
+  25% { transform: translate(-3px, 0); }
+  50% { transform: translate(3px, 0); }
+  75% { transform: translate(-3px, 0); }
   100% { transform: translate(0, 0); }
 }
 
 .shake {
   animation: shake 0.1s ease-in-out;
+}
+
+.next-tetromino {
+  padding: 30px;
+}
+
+.next-canvas {
+  padding: 100px;
 }
