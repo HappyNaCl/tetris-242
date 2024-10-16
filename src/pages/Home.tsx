@@ -1,5 +1,5 @@
-import Navbar from "../components/navbar";
-import StartModal from "../components/start/modal";
+import Navbar from "../components/Navbar";
+import StartModal from "../components/start/Modal";
 import "../index.css";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
@@ -17,7 +17,7 @@ export default function Home() {
         <Navbar />
         <h1 className="text-white text-5xl">Hello World!</h1>
         <p>This is home page</p>
-
+        <img src="./images/irys.webp" alt="IRyS" />
         <AnimatePresence
           initial={false}
           mode="wait"

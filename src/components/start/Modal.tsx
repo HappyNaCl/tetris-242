@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
-import Backdrop from "./backdrop";
+import Backdrop from "./Backdrop";
+import StartButton from "./StartButton";
 import { FC } from "react";
 
 interface StartModalProps {
@@ -36,12 +37,7 @@ const StartModal: FC<StartModalProps> = ({ handleClose }) => {
         animate="visible"
         exit="exit"
       >
-        <button
-          className="text-8xl text-white bg-red-700 px-24 py-6 rounded-lg"
-          onClick={handleClose}
-        >
-          START
-        </button>
+        <StartButton onClick={handleClose}>Start</StartButton>
       </motion.div>
     </Backdrop>
   );

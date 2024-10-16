@@ -13,7 +13,7 @@ export default function Backdrop({ children, onClick }: BackdropProps) {
       onClick={onClick}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+      exit={{ y: "-100vh", transition: { duration: 0.75 } }}
     >
       {children}
     </motion.div>

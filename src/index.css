@@ -1,3 +1,17 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  @font-face {
+    font-family: "Edit Undo";
+    font-weight: 400;
+    src: url("./fonts/edit-undo.brk.ttf");
+  }
+
+  @font-face {
+    font-family: "FFF";
+    font-weight: 400;
+    src: url("./fonts/fff-forward.regular.ttf");
+  }
+}
