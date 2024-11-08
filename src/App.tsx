@@ -5,17 +5,17 @@ import {
   Navigate,
 } from "react-router-dom";
 import Home from "./pages/Home";
-import Game from "./pages/Game";
+import Tetris from "./components/game/Tetris";
+
 export default function App() {
   return (
     <>
       <Router>
-        <Game/>
-        {/* <Routes>
+        {/* <Tetris/> */}
+        <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/game" element={<Game />} />
           <Route path="*" element={<Navigate to="/" />} />
-        </Routes> */}
+        </Routes>
       </Router>
     </>
   );
