@@ -3,6 +3,8 @@ import StartModal from "../components/start/modal";
 import "../index.css";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
+import "../styles/Home.css"
+import "../js/scroll-screen.js"
 
 export default function Home() {
   const [modalOpen, setModalOpen] = useState(true);
@@ -12,22 +14,25 @@ export default function Home() {
   };
 
   return (
-    <div className="bg-blue-950">
-      <motion.div className="h-screen">
-        <Navbar />
-        <h1 className="text-white text-5xl">Hello World!</h1>
-        <p>This is home page</p>
+    <div className="container bg-blue-950 h-screen flex flex-col items-center text-center justify-center">
+      {/* <Navbar /> */}
+      <div className="text-center first-screen">
+        <h1 className="title-screen tracking-widest">NAR</h1>
+        <p className="description-screen tracking-wide opacity-70 mt-2">
+          25-2
+        </p>
+      </div>
 
-        <AnimatePresence
-          initial={false}
-          mode="wait"
-          onExitComplete={() => null}
-        >
-          {modalOpen && (
-            <StartModal modalOpen={modalOpen} handleClose={close} />
-          )}
-        </AnimatePresence>
-      </motion.div>
+      {/* <AnimatePresence
+        initial={false}
+        mode="wait"
+        onExitComplete={() => null}
+      >
+        {modalOpen && (
+          <StartModal modalOpen={modalOpen} handleClose={close} />
+        )}
+      </AnimatePresence> */}
+        <div className="container"></div>
     </div>
   );
 }
